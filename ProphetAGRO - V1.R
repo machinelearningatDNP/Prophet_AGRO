@@ -78,7 +78,7 @@ prediccion <- function(vector_prod, nom_prod, ciudad, precioscsv, por){
   ggsave(file_name)
 }
 ### Se establece el porcentaje de entrenamiento del modelo
-por <- 0.8  
+por <- 0.95  
 
 ### Se inicia el ciclo por ciudades
 for(j in 1:length(ciudades)){

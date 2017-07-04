@@ -95,14 +95,18 @@ for (i in 1:length(fie)){
 
 for (i in 1:length(deef$Producto)){
   comparacion <- grepl(deef$Producto[i], unique(dataset$Producto))
-  if (comparacion==T){
-    poss <- match(TRUE, comparacion)
-    deef$Producto[deef$Producto == deef$Producto[i]] <- unique(dataset$Producto)[poss]
+  for (j in 1:length(comparacion)){
+    if (comparacion[j]==T){
+      poss <- match(TRUE, comparacion[j])
+      deef$Producto[deef$Producto == deef$Producto[i]] <- unique(dataset$Producto)[poss]
+    }
   }
   comparacion <- grepl(deef$Central[i], unique(dataset$Central))
-  if (comparacion==T){
-    poss <- match(TRUE, comparacion)
-    deef$Central[deef$Central == deef$Central[i]] <- unique(dataset$Central)[poss]
+  for (j in 1:length(comparacion)){
+    if (comparacion==T){
+      poss <- match(TRUE, comparacion)
+      deef$Central[deef$Central == deef$Central[i]] <- unique(dataset$Central)[poss]
+    }
   }
 }
 #dataset <- rbind(dataset, deef)

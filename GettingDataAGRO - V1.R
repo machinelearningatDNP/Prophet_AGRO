@@ -11,6 +11,7 @@ aa <-html_attr(a, "href")
 l <-c()
 ll <- c()
 fie <- c()
+dis <- c()
 urlb <- "http://www.dane.gov.co"
 chars <- ".xls"
 con<- grepl(chars, aa)
@@ -91,12 +92,17 @@ deef<- deef[-which(is.na(deef$Precio_kg)), ]
 for (i in 1:length(fie)){
   if (file.exists(fie[i])) file.remove(fie[i])
 }
+
 for (i in 1:length(deef$Producto)){
   comparacion <- grepl(deef$Producto[i], unique(dataset$Producto))
-  poss <- match(TRUE, comparacion)
-  deef$Producto[deef$Producto == deef$Producto[i]] <- unique(dataset$Producto)[poss]
+  if (comparacion==T){
+    poss <- match(TRUE, comparacion)
+    deef$Producto[deef$Producto == deef$Producto[i]] <- unique(dataset$Producto)[poss]
+  }
   comparacion <- grepl(deef$Central[i], unique(dataset$Central))
-  poss <- match(TRUE, comparacion)
-  deef$Central[deef$Central == deef$Central[i]] <- unique(dataset$Central)[poss]
+  if (comparacion==T){
+    poss <- match(TRUE, comparacion)
+    deef$Central[deef$Central == deef$Central[i]] <- unique(dataset$Central)[poss]
+  }
 }
-dataset <- rbind(dataset, deef)
+#dataset <- rbind(dataset, deef)

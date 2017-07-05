@@ -7,16 +7,16 @@ library(dplyr)
 mainDir <- "C:/Users/darojas/Documents/AGRO"
 setwd(mainDir)
 #dataset <- read_excel("C:/Users/darojas/Documents/AGRO/DATA.xlsx")
+dataset <- load("DATA.Rda")
 dataset$Precio_kg <- as.numeric(dataset$Precio_kg)
 ciudades <- unique(dataset$Central)
 productos <- unique(dataset$Producto)
 por <- 0.95 
 tiem <- 90
 rta <- (readline(prompt = 'Digite 1 para organizar las preddicones por ciudades o 2 por productos: '))
-i=1
-j=1
-vector_prod <- precioscsv[,i + 1]
-nom_prod <- zx[i]
+
+#vector_prod <- precioscsv[,i + 1]
+#nom_prod <- zx[i]
 grafico <- function(vector_prod, nom_prod, ciudad, precioscsv, por, tiem){
   dp <- data.frame(Fecha = precioscsv[1:round((length(precioscsv$Fecha))*por,0),"Fecha"], Precio = precioscsv[1:round((length(precioscsv$Fecha))*por,0),nom_prod])
   dr <- data.frame("Fecha" = precioscsv$Fecha, "Precio" = vector_prod)

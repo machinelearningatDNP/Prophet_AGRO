@@ -1,7 +1,9 @@
+install.packages(c("rvest","readxl","gdata","WriteXLS","stringi"))
 library(rvest)
 library(readxl)
 library(gdata)
 library(WriteXLS)
+library(stringi)
 mainDir <- "C:/Users/darojas/Documents/AGRO"
 setwd(mainDir)
 url <- "http://www.dane.gov.co/index.php/estadisticas-por-tema/agropecuario/sistema-de-informacion-de-precios-sipsa/componente-precios-mayoristas"
@@ -38,35 +40,38 @@ for (i in 1:length(misingdays)){
   dd <- as.numeric(substr(fd, 9, 10))
   ad <- as.numeric(substr(fd, 1, 4))
   comparacion <- paste(md,dd,ad,sep="_")
-  ll[i] <- as.Date(fd, origin="1970-01-01")
+  dis[i] <- paste(comparacion, ".xls", sep="")
+  ll[i] <- fd 
   for (j in 1:length(l)){
     re=l[j]
     con<- grepl(comparacion, re)
     if (con==TRUE){
-      urlxsl <- re
       fecha <- paste(comparacion,".xls",sep="")
-      download.file(urlxsl, destfile=fecha, mode="wb")
+      download.file(re, destfile=fecha, mode="wb")
       fie[i] <- fecha
+      
     }else{
       next
     }  
   }
 }
+ll <- as.Date(ll, origin="1970-01-01")
 deef <- data.frame(Fecha=as.Date(character()), 
                    Central=character(), 
                    Producto=character(), 
                    Precio_kg=as.numeric(character())
-                   
 )
 fie <- fie[!is.na(fie)]
-centrales <- unique(dataset$Central)
-productos <- unique(dataset$Producto)
+dis <- dis[dis != "julio_3_2017.xls"]
+dis <- dis[dis != "junio_26_2017.xls"]
+dis <- dis[dis != "junio_19_2017.xls"]
+fie <- dis
 for (j in 1:length(fie)){
   data <- read.xls(fie[j], verbose=FALSE, perl="C:\\Perl64\\bin\\perl.exe", skip=1, header= TRUE)
   coll <- colnames(data)
-  for (i in 1:length(coll)){
-    comparacion <- grepl("(X)", coll[i])
-    if (comparacion==T){
+  comparacion <- grepl("(X)", coll)
+  for (i in 1:length(comparacion)){
+    if (comparacion[i]==T){
       data[coll[i]] <- NULL
     }
   }
@@ -75,38 +80,39 @@ for (j in 1:length(fie)){
     for (jj in 2:length(data)){
       producto <- data$Precio...Kg[ii]
       central <- colnames(data)
-      zzzz<- data.frame(ll[j], central[jj], producto, data[ii,jj])
-      names(zzzz)<-c("Fecha", "Central", "Producto", "Precio_kg")
-      deef <- rbind(deef, zzzz)
+      prueba <- fie[j]
+      prueba <- unlist(strsplit(prueba, "[_]"))
+      mes <- match(prueba[1],meses)
+      dia <- prueba[2]
+      year <- substr(prueba[3],1,4)
+      ffinal <- paste(year,mes,dia,sep="-")
+      z<- data.frame(ffinal, central[jj], producto, data[ii,jj])
+      names(z)<-c("Fecha", "Central", "Producto", "Precio_kg")
+      deef <- rbind(deef, z)
     }
   }
 }
 
-deef$Fecha <- as.POSIXct(as.Date(deef$Fecha, origin="1970-01-01"))
+deef$Fecha <- as.POSIXct(as.character(deef$Fecha), format= "%Y-%m-%d")
 deef$Central <- as.character(deef$Central)
 deef$Producto <- as.character(deef$Producto)
 deef$Precio_kg <- gsub(pattern = ",", replacement = "",x = deef$Precio_kg)
 deef$Precio_kg <- as.numeric(deef$Precio_kg)
 
 deef<- deef[-which(is.na(deef$Precio_kg)), ]
-for (i in 1:length(fie)){
-  if (file.exists(fie[i])) file.remove(fie[i])
-}
 
+deef$Central <- stri_trans_general(deef$Central,"Latin-ASCII")
+deef$Producto <- stri_trans_general(deef$Producto,"Latin-ASCII")
+dataset$Central <- stri_trans_general(dataset$Central,"Latin-ASCII")
+dataset$Producto <- stri_trans_general(dataset$Producto,"Latin-ASCII")
 for (i in 1:length(deef$Producto)){
-  comparacion <- grepl(deef$Producto[i], unique(dataset$Producto))
-  for (j in 1:length(comparacion)){
-    if (comparacion[j]==T){
-      poss <- match(TRUE, comparacion[j])
-      deef$Producto[deef$Producto == deef$Producto[i]] <- unique(dataset$Producto)[poss]
-    }
-  }
-  comparacion <- grepl(deef$Central[i], unique(dataset$Central))
-  for (j in 1:length(comparacion)){
-    if (comparacion==T){
-      poss <- match(TRUE, comparacion)
-      deef$Central[deef$Central == deef$Central[i]] <- unique(dataset$Central)[poss]
-    }
-  }
+  poss <- match(TRUE, grepl(substr(deef$Producto[i],1,4),substr(unique(dataset$Producto),1,4)))
+  deef$Producto[deef$Producto == deef$Producto[i]] <- unique(dataset$Producto)[poss]
+  poss2 <- match(TRUE, grepl(substr(deef$Central[i],1,4),substr(unique(dataset$Central),1,4)))
+  deef$Central[deef$Central == deef$Central[i]] <- unique(dataset$Central)[poss2]
 }
-#dataset <- rbind(dataset, deef)
+dataset <- rbind(dataset, deef)
+save(dataset,file="DATA.Rda")
+#for (i in 1:length(fie)){
+#  if (file.exists(fie[i])) file.remove(fie[i])
+#}

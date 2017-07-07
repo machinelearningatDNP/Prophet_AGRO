@@ -1,4 +1,4 @@
-install.packages(c("rvest","readxl","gdata","WriteXLS","stringi"))
+#install.packages(c("rvest","readxl","gdata","WriteXLS","stringi"))
 library(rvest)
 library(readxl)
 library(gdata)
@@ -31,7 +31,7 @@ lastime <- as.Date(dates[which.max(md)])+1
 today <- Sys.Date()
 misingdays <- as.Date(as.Date(lastime):as.Date(today), origin="1970-01-01")
 misingdays <- misingdays[order(as.Date(misingdays, format="%Y-%m-%d"), decreasing = TRUE)]
-fds <- misingdays[grepl("(sÃ¡bado|domingo)", weekdays(misingdays))]
+fds <- misingdays[grepl("(sábado|domingo)", weekdays(misingdays))]
 misingdays <- misingdays[!(misingdays %in% fds)]
 
 for (i in 1:length(misingdays)){
@@ -111,8 +111,9 @@ for (i in 1:length(deef$Producto)){
   poss2 <- match(TRUE, grepl(substr(deef$Central[i],1,4),substr(unique(dataset$Central),1,4)))
   deef$Central[deef$Central == deef$Central[i]] <- unique(dataset$Central)[poss2]
 }
+
 dataset <- rbind(dataset, deef)
-save(dataset,file="DATA.Rda")
+save(dataset,file="dataset.Rda")
 #for (i in 1:length(fie)){
 #  if (file.exists(fie[i])) file.remove(fie[i])
 #}

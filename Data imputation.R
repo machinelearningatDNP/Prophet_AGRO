@@ -1,10 +1,14 @@
 load("dataset.Rda")
+library(reshape2)
+library(lattice) 
+library(imputeTS)
+library(TSdist)
 df <- dataset
 df$Precio_kg <- as.numeric(df$Precio_kg)
 df$Precio_kg <- round(df$Precio_kg, 0)
 df_p <- dcast(df, formula = Central + Fecha ~ Producto, mean, value.var = "Precio_kg", na.rm = TRUE)
-#df_p$`Limon comun` <- NULL
-#df_p$`Limon Comun` <- NULL
+df_p$`Limon comun` <- NULL
+df_p$`Limon Comun` <- NULL
 productos <- colnames(df_p)
 productos <- productos[-c(1:2)]
 centrales <- unique(df_p$Central)
@@ -14,7 +18,7 @@ for (product in productos){
   dff <- dcast(dff, formula = Fecha ~ Central, mean, value.var = product)
   for (central in centrales){
     mv <- (sum(is.na(dff[central]))/nrow(dff[central]))*100
-    if (mv>=40){
+    if (mv>=90){
       dff[central] <- NULL
     }else{
       dff[central] <- try(as.numeric(round(na.interpolation(ts(dff[central], frequency = 1)),0)))

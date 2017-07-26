@@ -5,7 +5,10 @@ library(ggplot2)
 library(reshape2)
 library(dplyr)
 library(stringi)
-mainDir <- "C:/Users/darojas/Documents/AGRO"
+library(TSdist)
+library(imputeTS)
+library(lattice)
+mainDir <- "C:/Users/darojas/OneDrive - Departamento Nacional de Planeacion/Documentos/AGRO/PROYECTO"
 setwd(mainDir)
 #dataset <- read_excel("C:/Users/darojas/Documents/AGRO/DATA.xlsx")
 load("dataset.Rda")
@@ -58,7 +61,6 @@ grafico <- function(vector_prod, nom_prod, ciudad, precioscsv, por, tiem){
   ggsave(file=file_name, dpi = 72)
   dev.off()  
 }
-
 if (rta=="1"){
   setwd(mainDir)
   dir.create(file.path(mainDir,"Ciudades"), showWarnings = FALSE)
@@ -95,7 +97,6 @@ if (rta=="1"){
     }  
   }
 }
-todcon <- function(dataset, por, tiem, rta, ciudades){
 setwd(mainDir)
 ciudad <- "Todo el País"
 dir.create(file.path(mainDir, ciudad), showWarnings = FALSE)
@@ -108,4 +109,4 @@ for(i in 1:length(zx)){
   zx[i]
   try(grafico(preciosce[,i + 1], zx[i], ciudad, preciosce, por, tiem), FALSE)
 }  
-}
+

@@ -4,14 +4,20 @@ library(prophet)
 library(ggplot2)
 library(reshape2)
 library(dplyr)
-mainDir <- "C:/Users/darojas/Documents/AGRO"
+library(stringi)
+library(TSdist)
+library(imputeTS)
+library(lattice)
+mainDir <- "C:/Users/darojas/OneDrive - Departamento Nacional de Planeacion/Documentos/AGRO/PROYECTO"
 setwd(mainDir)
 #dataset <- read_excel("C:/Users/darojas/Documents/AGRO/DATA.xlsx")
-dataset <- load("DATA.Rda")
+load("dataset.Rda")
+dataset$Central <- stri_trans_general(dataset$Central,"Latin-ASCII")
+dataset$Producto <- stri_trans_general(dataset$Producto,"Latin-ASCII")
 dataset$Precio_kg <- as.numeric(dataset$Precio_kg)
 ciudades <- unique(dataset$Central)
 productos <- unique(dataset$Producto)
-por <- 0.95 
+por <- 0.8 
 tiem <- 90
 rta <- (readline(prompt = 'Digite 1 para organizar las preddicones por ciudades o 2 por productos: '))
 
@@ -43,17 +49,18 @@ grafico <- function(vector_prod, nom_prod, ciudad, precioscsv, por, tiem){
   forecast$ds2 <- as.POSIXct(forecast$ds, format="%Y-%m-%d")
   #qq<- prophet_plot_components(x, forecast)
 #savePlot(filename=nom_prod, type="png")
-file_name = paste("Producto - ", nom_prod, ".png", sep = "") ##717
-titulo <- paste(nom_prod,"en", ciudad)
-ggplot(aes(x = Fecha, y =  Precio), data = datos)  + ggtitle(titulo) + geom_point() +
-  geom_line(aes(x = ds2, y = yhat),stat = "identity", data = forecast, color = c(rep("red", (round((length(precioscsv$Fecha))*por,0)+1)), rep("blue", nrow(forecast) - (round((length(precioscsv$Fecha))*por,0)+1)))) +  
-  geom_line (aes(x = ds2, y = yhat_upper), colour='grey', linetype="dotted", data = forecast, stat='identity')  +
-  geom_line (aes(x = ds2, y = yhat_lower), colour='grey', linetype="dotted", data = forecast, stat='identity')  + 
-  theme_bw()
-file_name <- gsub("\\*", "", file_name)
-ggsave(file_name)
+  file_name = paste("Producto - ", nom_prod, ".png", sep = "") ##717
+  titulo <- paste(nom_prod,"en", ciudad)
+  file_name <- gsub("\\*", "", file_name)
+  
+  gra <- ggplot(aes(x = Fecha, y =  Precio), data = datos)  + ggtitle(titulo) + geom_point() +
+    geom_line(aes(x = ds2, y = yhat),stat = "identity", data = forecast, color = c(rep("red", (round((length(precioscsv$Fecha))*por,0)+1)), rep("blue", nrow(forecast) - (round((length(precioscsv$Fecha))*por,0)+1)))) +  
+    geom_line (aes(x = ds2, y = yhat_upper), colour='grey', linetype="dotted", data = forecast, stat='identity')  +
+    geom_line (aes(x = ds2, y = yhat_lower), colour='grey', linetype="dotted", data = forecast, stat='identity')  + 
+    theme_bw()
+  ggsave(file=file_name, dpi = 72)
+  dev.off()  
 }
-
 if (rta=="1"){
   setwd(mainDir)
   dir.create(file.path(mainDir,"Ciudades"), showWarnings = FALSE)
@@ -90,7 +97,6 @@ if (rta=="1"){
     }  
   }
 }
-todcon <- function(dataset, por, tiem, rta, ciudades){
 setwd(mainDir)
 ciudad <- "Todo el País"
 dir.create(file.path(mainDir, ciudad), showWarnings = FALSE)
@@ -103,4 +109,4 @@ for(i in 1:length(zx)){
   zx[i]
   try(grafico(preciosce[,i + 1], zx[i], ciudad, preciosce, por, tiem), FALSE)
 }  
-}
+
